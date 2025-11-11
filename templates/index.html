@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resume Classifier</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Poppins", sans-serif;
+      background-color: #0d0d0d;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      letter-spacing: 1px;
+      color: #fff;
+      margin-bottom: 10px;
+      animation: fadeInDown 1s ease;
+    }
+
+    h2 {
+      font-weight: 400;
+      color: #b0b0b0;
+      margin-bottom: 40px;
+      animation: fadeIn 1.5s ease;
+    }
+
+    form {
+      background: #111;
+      border: 1px solid #333;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(108, 99, 255, 0.15);
+      width: 90%;
+      max-width: 420px;
+      animation: fadeIn 2s ease;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      border: 2px dashed #6c63ff;
+      background: transparent;
+      color: #ccc;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    input[type="file"]:hover {
+      background: rgba(108, 99, 255, 0.05);
+      border-color: #8a83ff;
+    }
+
+    button {
+      background: linear-gradient(90deg, #6c63ff, #9c27b0);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 10px rgba(108, 99, 255, 0.4);
+    }
+
+    .spinner {
+      display: none;
+      margin: 25px auto;
+      border: 4px solid #222;
+      border-top: 4px solid #6c63ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .result {
+      margin-top: 25px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #90ee90;
+      display: none;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.9rem;
+      color: #666;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Resume Classifier</h1>
+  <h2>Upload your resume to predict your best-fit tech job</h2>
+
+  <form id="upload-form" enctype="multipart/form-data">
+    <input type="file" id="resume" name="resume" accept=".pdf,.txt" required />
+    <button type="submit">Analyze Resume</button>
+    <div class="spinner" id="spinner"></div>
+    <div class="result" id="result"></div>
+  </form>
+
+  <footer>
+    Rochane Hurst &amp; Alexandra Krejci – CS 446: Cloud Computing - CSUSM 2026
+  </footer>
+
+  <script>
+    const form = document.getElementById("upload-form");
+    const spinner = document.getElementById("spinner");
+    const result = document.getElementById("result");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      result.style.display = "none";
+      spinner.style.display = "block";
+
+      const formData = new FormData(form);
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        spinner.style.display = "none";
+
+        if (data.error) {
+          result.textContent = "⚠️ " + data.error;
+          result.style.color = "#f44336";
+        } else {
+          result.textContent = "🏆 Predicted Job: " + data.predicted_job;
+          result.style.color = "#90ee90";
+        }
+        result.style.display = "block";
+      } catch (error) {
+        spinner.style.display = "none";
+        result.textContent = "⚠️ Server error. Try again later.";
+        result.style.color = "#f44336";
+        result.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
